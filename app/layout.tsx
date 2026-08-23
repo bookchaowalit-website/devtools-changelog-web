@@ -27,6 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* THESIS: Changelog is a release queue. OWN-WORLD: black cracktro terminal, bitmap face, amber caret. STORY: grep, append, remove. FIRST VIEWPORT: show changed lines and local editing. FORM: seed 44f7e22c assigned cracktro queue direction. FINISH: sparse rules, honest browser-local persistence. */}
         <Analytics />
         <SpeedInsights />
         {children}

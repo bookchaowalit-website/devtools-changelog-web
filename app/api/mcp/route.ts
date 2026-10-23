@@ -1,47 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
-  let requestId: number | string = 0;
+// Stateless JSON-RPC MCP endpoint. The changelog entries live in each visitor's browser, so the server has no data to
+// expose: it lists no tools and rejects every call instead of pretending to run one.
 
+type RpcRequest = { id?: number | string | null; method?: string; params?: { name?: string } };
+
+export async function POST(request: Request) {
+  let id: RpcRequest["id"] = null;
   try {
-    const body = await request.json();
-    const { method, params } = body;
-    let result;
-
-    switch (method) {
-      case 'initialize':
-        result = {
-          protocolVersion: '2024-11-05',
-          capabilities: { tools: {}, resources: {} },
-          serverInfo: {
-            name: 'Changelog',
-            version: '1.0.0',
-            description: 'Changelog - MCP Server'
-          }
-        };
-        break;
-
-      case 'tools/list':
-        result = {
-          tools: [
-            { name: 'get_all', description: 'Get all items', inputSchema: { type: 'object', properties: {} } },
-            { name: 'get_by_id', description: 'Get item by ID', inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
-            { name: 'search', description: 'Search items', inputSchema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } }
-          ]
-        };
-        break;
-
-      case 'tools/call':
-        const toolName = params?.name;
-        result = { message: 'Tool called: ' + toolName, data: params?.arguments };
-        break;
-
+    const body = (await request.json()) as RpcRequest;
+    id = body.id ?? null;
+    switch (body.method) {
+      case "initialize":
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          result: { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "Changelog", version: "1.0.0" } },
+        });
+      case "tools/list":
+        return NextResponse.json({ jsonrpc: "2.0", id, result: { tools: [] } });
+      case "tools/call":
+        return NextResponse.json({ jsonrpc: "2.0", id, error: { code: -32602, message: `Unknown tool: ${String(body.params?.name)}` } }, { status: 400 });
       default:
-        throw new Error(`Unknown method: ${method}`);
+        return NextResponse.json({ jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown method: ${String(body.method)}` } }, { status: 400 });
     }
-
-    return NextResponse.json({ jsonrpc: '2.0', id: requestId, result });
-  } catch (error) {
-    return NextResponse.json({ jsonrpc: '2.0', id: requestId || 1, error: { code: -32000, message: error instanceof Error ? error.message : 'Error' } }, { status: 500 });
+  } catch {
+    return NextResponse.json({ jsonrpc: "2.0", id, error: { code: -32700, message: "Parse error" } }, { status: 400 });
   }
 }

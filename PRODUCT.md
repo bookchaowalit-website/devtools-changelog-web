@@ -1,46 +1,43 @@
-# bookchaowalit-changelog-frontend — Product brief
+# Changelog — Product truth
 
-**Slug:** `bookchaowalit-website/bookchaowalit-changelog-frontend`  
-**Generated:** 2026-08-11 (bulk Book Dev closeout)  
-**Status:** starter / portfolio boundary
+> Inferred from the code and copy (no user interview). Checked against the portfolio card claims review
+> (`portfolio-site-web/docs/audits/CARD-CLAIMS-REVIEW-2026-10.md`, row `changelog`, evidence Prototype) on 2026-10-23.
 
-## Purpose
+## What it is
 
-Portfolio repository under Book Dev. This brief records ownership and the
-current honest status so the nested tree is not an empty shell in the task
-system.
+A client-side release-notes list kept in the visitor's browser, seeded with two sample lines.
 
-## Runnable path
+## Who it is for
 
-See `README.md` for install and run instructions when present.
+A portfolio visitor (or the owner) who wants a quick scratch list of release lines.
 
-## Limits
+## What works today
 
-- Not claimed as production-ready unless README and tests prove it.
-- Mobile smoke / emulator acceptance is separate and toolchain-dependent.
+1. Append a line with a title, details and state (Draft or Released); a blank title is refused.
+2. Search title, details and state (case-insensitive); delete a line.
+3. Lines persist in localStorage (`changelog-v1`) in this browser only. Dates print in UTC.
+4. `/api/mcp` answers JSON-RPC `initialize` and an empty `tools/list`, echoes the request id and returns JSON-RPC
+   errors for tool calls and unknown methods.
+5. Front-end and server errors go to Sentry (errors only, personal data stripped) when `NEXT_PUBLIC_SENTRY_DSN` is set.
 
-## Source README excerpt
+## What does not work (and must not be claimed)
 
-```
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+- No aggregation of release notes across portfolio projects, no commit links, no per-project subscriptions (claims
+  removed from the portfolio card in the 2026-10 review).
+- The two seed lines are sample copy, not real releases. The unused `data/changes.json` template was deleted on
+  2026-10-23.
+- No account, sync, export or sharing; clearing site data loses the lines.
 
-## Getting Started
+## Live URL and deploy state
 
-First, run the development server:
+- Live: https://changelog.bookchaowalit.com (HTTP 200 on 2026-10-23).
+- The Vercel project `bookchaowalit-changelog-frontend` is deployed only by CLI. Last production deploy:
+  2026-10-08, CLI, commit e253bf4 (Next 16.3.8). The CVE patch (Next 16.4.2) was not deployed before Vercel's daily
+  deployment quota ran out on 2026-10-23; the coordinator deploys the latest green `main` after the quota resets.
+  Its Git link names the old repository `bookchaowalit/bookchaowalit-changelog-frontend`, so a push to `main` does
+  not deploy until the owner reconnects Vercel Git to `bookchaowalit-website/devtools-changelog-web` (owner action D9).
+- `NEXT_PUBLIC_SENTRY_DSN` is set on the Vercel project (Sentry project `devtools-changelog-web`, org `personal-yu0`).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Boundaries
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize an
-```
+- Browser-only apart from the stateless `/api/mcp` route. No personal data is collected.

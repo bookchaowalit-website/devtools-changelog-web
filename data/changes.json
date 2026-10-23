@@ -1,6 +1,0 @@
-{
-  "changes": [
-    {"id": "1", "project": "Portfolio", "type": "feature", "description": "Added new features", "date": "2025-02-01"},
-    {"id": "2", "project": "API", "type": "fix", "description": "Bug fixes", "date": "2025-01-28"}
-  ]
-}

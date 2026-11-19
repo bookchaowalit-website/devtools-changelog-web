@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SEED, STATUSES, addItem, filterItems, formatReleaseDate, parseItems, removeItem, type Item } from "@/lib/changelog";
+import { SEED, STATUSES, addItem, filterItems, formatReleaseDate, isoDay, parseItems, removeItem, type Item } from "@/lib/changelog";
 
 const rows: Item[] = [
   { id: "a", title: "1.0.0", body: "First stable", status: "Released", createdAt: Date.UTC(2026, 0, 5) },
@@ -41,5 +41,11 @@ describe("changelog logic", () => {
     expect(parseItems('[null, {"id":1}, {"id":"x","title":"t","status":"Shipped","createdAt":"soon"}]')).toEqual([
       { id: "x", title: "t", body: "", status: "Draft", createdAt: 0 },
     ]);
+  });
+});
+
+describe("isoDay", () => {
+  it("prints the UTC calendar day", () => {
+    expect(isoDay(Date.UTC(2026, 9, 2, 23, 30))).toBe("2026-10-02");
   });
 });

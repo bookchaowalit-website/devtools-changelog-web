@@ -1,23 +1,13 @@
-# Changelog design direction
+# Changelog design
 
-## Product world
-Changelog is a local release queue. It records what moved the product forward and lets the owner append or remove a line without needing a CMS.
+Moved onto the shared **Reader shell** on 2026-11-19 (see `READER.md`; `app/reader-shell.css`,
+`components/reader-shell.tsx` and `tests/reader-shell.test.tsx` are byte-identical copies from content-techblog-web).
+The black terminal / ASCII-face look is retired.
 
-## Visual direction
-- Seed: 44f7e22c — assigned cracktro scroller queue direction.
-- Material: black void, bitmap face, subtle depth grid, one amber caret.
-- Typography: serif release titles with tiny mono queue metadata.
-- Composition: a release stream and compose line replace the generic card stack.
-
-## Interaction
-- Search remains a live grep across title, body, and status.
-- Add and delete preserve the current localStorage model.
-- Released state is amber; draft state stays quiet.
-- Responsive view collapses each release into a readable queue line.
-
-## Constraints
-- Preserve browser-local persistence and the existing seed entries.
-- State copy must stay honest: no CMS, no backend, no invented release cadence.
-- Keep the page keyboard- and screen-reader-friendly with labels on controls.
-- Avoid excessive containers, pills, and decorative chrome.
-
+- One h1 and a one-sentence lede; the release list comes first (with live search and a result count), the
+  "Add a release" form with visible labels after it.
+- Each release: date (machine-readable `<time>`), title, detail, its state as a text tag (Released / Draft), and a
+  44px Remove button.
+- A blank title shows an inline error and puts focus back in the field.
+- Two empty states: "Nothing matches" (Clear search) and "No releases yet" (restore the sample lines).
+- Footer links back to bookchaowalit.com and says the lines live in this browser's localStorage only.

@@ -13,8 +13,9 @@ A portfolio visitor (or the owner) who wants a quick scratch list of release lin
 
 ## What works today
 
-1. Append a line with a title, details and state (Draft or Released); a blank title is refused.
-2. Search title, details and state (case-insensitive); delete a line.
+1. Add a release with a title, details and state (Draft or Released); a blank title is refused with an inline error.
+2. Search title, details and state (case-insensitive, live); remove a line; when the list is empty, restore the two
+   sample lines.
 3. Lines persist in localStorage (`changelog-v1`) in this browser only. Dates print in UTC.
 4. `/api/mcp` answers JSON-RPC `initialize` and an empty `tools/list`, echoes the request id and returns JSON-RPC
    errors for tool calls and unknown methods.

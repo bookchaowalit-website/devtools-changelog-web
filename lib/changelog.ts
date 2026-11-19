@@ -64,3 +64,8 @@ export function formatReleaseDate(createdAt: number): string {
     .toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" })
     .toUpperCase();
 }
+
+/** "2 Oct 2026" for the reader list; the ISO day for <time dateTime>. Both in UTC. */
+export function isoDay(createdAt: number): string {
+  return new Date(createdAt).toISOString().slice(0, 10);
+}

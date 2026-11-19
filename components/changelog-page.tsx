@@ -58,7 +58,7 @@ export function ChangelogPage({ store = defaultStore, now = Date.now }: { store?
             <ResultCount shown={visible.length} total={items.length} noun="release" query={query.trim() || undefined} />
           </div>
           {visible.length ? (
-            <ul className="rs-list">
+            <ul className="rs-list" role="list">
               {visible.map((item) => (
                 <li key={item.id}>
                   <article className="rs-entry cl-entry">

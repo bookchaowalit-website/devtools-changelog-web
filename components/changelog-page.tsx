@@ -12,6 +12,13 @@ function createId(): string {
   return `line-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+const noSubscribe = () => () => {};
+
+/** False on the server and during hydration, true once React handles events in this browser. */
+function useHydrated(): boolean {
+  return useSyncExternalStore(noSubscribe, () => true, () => false);
+}
+
 function ReleaseDate({ createdAt }: { createdAt: number }) {
   const day = isoDay(createdAt);
   return day ? <time dateTime={day}>{formatDate(day)}</time> : <span>Date unknown</span>;
@@ -26,6 +33,8 @@ export function ChangelogPage({ store = defaultStore, now = Date.now }: { store?
   const [notice, setNotice] = useState("");
   const titleRef = useRef<HTMLInputElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
+  // Until hydration the form has no submit handler, so a submit would reload the page and drop the draft.
+  const ready = useHydrated();
   const visible = useMemo(() => filterItems(items, query.trim()), [items, query]);
 
   function add(event: FormEvent<HTMLFormElement>) {
@@ -51,9 +60,17 @@ export function ChangelogPage({ store = defaultStore, now = Date.now }: { store?
     setQuery("");
     toolbarRef.current?.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
   }
+  // Another tab may have added lines since this one showed the empty state: seed only if the stored list is still empty.
+  // The button disappears with the empty state, so focus moves to the search field.
   function restoreSamples() {
-    store.update(() => SEED);
-    setNotice("Restored the two sample lines.");
+    let restored = false;
+    store.update((latest) => {
+      if (latest.length) return latest;
+      restored = true;
+      return SEED;
+    });
+    setNotice(restored ? "Restored the two sample lines." : "Another tab already added releases; showing them.");
+    toolbarRef.current?.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
   }
 
   return (
@@ -95,19 +112,19 @@ export function ChangelogPage({ store = defaultStore, now = Date.now }: { store?
           <form className="cl-form" onSubmit={add} noValidate>
             <label className="cl-field">
               <span>Version or title</span>
-              <input ref={titleRef} value={draft.title} onChange={(event) => { setDraft({ ...draft, title: event.target.value }); if (error) setError(""); }} placeholder="0.3.0" autoComplete="off" aria-invalid={error ? true : undefined} aria-describedby={error ? "release-error" : undefined} />
+              <input ref={titleRef} disabled={!ready} value={draft.title} onChange={(event) => { setDraft({ ...draft, title: event.target.value }); if (error) setError(""); }} placeholder="0.3.0" autoComplete="off" aria-invalid={error ? true : undefined} aria-describedby={error ? "release-error" : undefined} />
             </label>
             <label className="cl-field cl-field-wide">
               <span>What changed</span>
-              <input value={draft.body} onChange={(event) => setDraft({ ...draft, body: event.target.value })} placeholder="Added search to the queue" autoComplete="off" />
+              <input disabled={!ready} value={draft.body} onChange={(event) => setDraft({ ...draft, body: event.target.value })} placeholder="Added search to the queue" autoComplete="off" />
             </label>
             <label className="cl-field">
               <span>State</span>
-              <select value={draft.status} onChange={(event) => setDraft({ ...draft, status: event.target.value as ReleaseStatus })}>
+              <select disabled={!ready} value={draft.status} onChange={(event) => setDraft({ ...draft, status: event.target.value as ReleaseStatus })}>
                 {STATUSES.map((status) => <option key={status}>{status}</option>)}
               </select>
             </label>
-            <div className="cl-submit"><button type="submit" className="rs-button">Add release</button></div>
+            <div className="cl-submit"><button type="submit" className="rs-button" disabled={!ready}>Add release</button></div>
             {error ? <p id="release-error" className="cl-error" role="alert">{error}</p> : null}
           </form>
         </section>

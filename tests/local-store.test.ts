@@ -37,6 +37,16 @@ describe("createLocalStore", () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
+  it("applies an update to what another tab stored after this tab cached", () => {
+    const mem = memory({ k: "[]" });
+    const store = createLocalStore({ key: "k", seed: ["seed"], parse, serialize: JSON.stringify, storage: () => mem });
+    expect(store.getSnapshot()).toEqual([]);
+    mem.data.k = '["other tab"]';
+    store.update((latest) => (latest.length ? latest : ["seed"]));
+    expect(store.getSnapshot()).toEqual(["other tab"]);
+    expect(mem.data.k).toBe('["other tab"]');
+  });
+
   it("falls back to the seed and memory when storage throws", () => {
     const broken = { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("quota"); } };
     const store = createLocalStore({ key: "k", seed: ["seed"], parse, serialize: JSON.stringify, storage: () => broken });

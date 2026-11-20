@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { act } from "react";
+import { renderToString } from "react-dom/server";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ChangelogPage } from "@/components/changelog-page";
@@ -96,5 +97,23 @@ describe("changelog page", () => {
     expect(host.textContent).toContain("No releases yet");
     press(button("Restore the sample lines"));
     expect(titles()).toEqual(["0.2.0", "0.1.0"]);
+    expect(document.activeElement).toBe(host.querySelector('input[type="search"]'));
+  });
+
+  it("does not overwrite releases another tab stored after this tab emptied its list", () => {
+    press(host.querySelector('button[aria-label="Remove 0.2.0"]')!);
+    press(host.querySelector('button[aria-label="Remove 0.1.0"]')!);
+    expect(host.textContent).toContain("No releases yet");
+    saved.k = JSON.stringify([{ id: "t", title: "3.0.0", body: "", status: "Released", createdAt: Date.UTC(2026, 10, 19) }]);
+    press(button("Restore the sample lines"));
+    expect(titles()).toEqual(["3.0.0"]);
+    expect(JSON.parse(saved.k)).toHaveLength(1);
+  });
+
+  it("keeps the add form disabled in server HTML and enables it once hydrated", () => {
+    const html = renderToString(<ChangelogPage />);
+    const form = html.slice(html.indexOf("<form"), html.indexOf("</form>"));
+    expect(form.match(/disabled=""/g)).toHaveLength(4);
+    expect(host.querySelectorAll("form [disabled]")).toHaveLength(0);
   });
 });

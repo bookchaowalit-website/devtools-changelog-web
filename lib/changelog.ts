@@ -72,5 +72,8 @@ export function formatReleaseDate(createdAt: number): string {
 export function isoDay(createdAt: number): string | null {
   const date = new Date(createdAt);
   if (Number.isNaN(date.getTime())) return null;
+  // Years outside 0000–9999 print as "+010000-01-01", which slice(0, 10) would cut into a non-date.
+  const year = date.getUTCFullYear();
+  if (year < 0 || year > 9999) return null;
   return date.toISOString().slice(0, 10);
 }

@@ -30,6 +30,18 @@ export function createLocalStore<T>(options: {
     }
   }
 
+  // The value an update must build on: what is stored now (another tab may have written since this tab cached),
+  // or this tab's cached value when nothing is stored yet or storage refuses to be read.
+  function latest(cached: T): T {
+    try {
+      const raw = storage()?.getItem(options.key);
+      if (raw == null) return cached;
+      return options.parse(raw) ?? cached;
+    } catch {
+      return cached;
+    }
+  }
+
   return {
     subscribe(listener) {
       listeners.add(listener);
@@ -43,7 +55,7 @@ export function createLocalStore<T>(options: {
       return options.seed;
     },
     update(next) {
-      cache = next(this.getSnapshot());
+      cache = next(latest(this.getSnapshot()));
       try {
         storage()?.setItem(options.key, options.serialize(cache));
       } catch {

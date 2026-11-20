@@ -53,4 +53,8 @@ describe("isoDay", () => {
     expect(isoDay(1e20)).toBeNull();
     expect(isoDay(-1e20)).toBeNull();
   });
+  it("returns null for a year outside 0000-9999 instead of a truncated non-date", () => {
+    expect(isoDay(Date.UTC(10000, 0, 1))).toBeNull();
+    expect(isoDay(Date.UTC(9999, 11, 31))).toBe("9999-12-31");
+  });
 });

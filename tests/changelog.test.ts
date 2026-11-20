@@ -48,4 +48,9 @@ describe("isoDay", () => {
   it("prints the UTC calendar day", () => {
     expect(isoDay(Date.UTC(2026, 9, 2, 23, 30))).toBe("2026-10-02");
   });
+  it("returns null instead of throwing for a finite timestamp Date cannot print", () => {
+    expect(() => isoDay(1e20)).not.toThrow();
+    expect(isoDay(1e20)).toBeNull();
+    expect(isoDay(-1e20)).toBeNull();
+  });
 });

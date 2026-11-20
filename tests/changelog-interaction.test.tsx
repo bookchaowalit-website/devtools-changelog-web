@@ -36,6 +36,23 @@ afterEach(() => {
   host.remove();
 });
 
+describe("changelog page with a broken stored date", () => {
+  it("renders the row as Date unknown and keeps the other rows", () => {
+    act(() => root.unmount());
+    const broken = JSON.stringify([
+      { id: "a", title: "9.9.9", body: "", status: "Released", createdAt: 1e20 },
+      { id: "b", title: "0.1.0", body: "", status: "Released", createdAt: Date.UTC(2026, 9, 1) },
+    ]);
+    const store = createLocalStore<Item[]>({ key: "k", seed: SEED, parse: parseItems, serialize: JSON.stringify, storage: () => ({ getItem: () => broken, setItem: () => {} }) });
+    root = createRoot(host);
+    act(() => root.render(<ChangelogPage store={store} />));
+    expect(titles()).toEqual(["9.9.9", "0.1.0"]);
+    const metas = [...host.querySelectorAll(".rs-entry-meta")].map((m) => m.textContent);
+    expect(metas[0]).toBe("Date unknown");
+    expect(host.querySelectorAll("time")).toHaveLength(1);
+  });
+});
+
 describe("changelog page", () => {
   it("refuses a blank title with an inline error and focuses the field", () => {
     submit();
@@ -63,6 +80,14 @@ describe("changelog page", () => {
     expect(host.textContent).toContain("Nothing matches");
     press(button("Clear search"));
     expect(titles()).toHaveLength(2);
+  });
+
+  it("returns focus to the search field after Clear search", () => {
+    const search = host.querySelector<HTMLInputElement>('input[type="search"]')!;
+    type(search, "zzz");
+    press(button("Clear search"));
+    expect(document.activeElement).toBe(search);
+    expect(search.value).toBe("");
   });
 
   it("removes every line, then offers to restore the samples", () => {

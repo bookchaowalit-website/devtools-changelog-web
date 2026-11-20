@@ -12,6 +12,11 @@ function createId(): string {
   return `line-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function ReleaseDate({ createdAt }: { createdAt: number }) {
+  const day = isoDay(createdAt);
+  return day ? <time dateTime={day}>{formatDate(day)}</time> : <span>Date unknown</span>;
+}
+
 /** Release notes on the Reader shell: add a line, search, remove; everything stays in this browser. */
 export function ChangelogPage({ store = defaultStore, now = Date.now }: { store?: LocalStore<Item[]>; now?: () => number }) {
   const items = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
@@ -20,6 +25,7 @@ export function ChangelogPage({ store = defaultStore, now = Date.now }: { store?
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const titleRef = useRef<HTMLInputElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const visible = useMemo(() => filterItems(items, query.trim()), [items, query]);
 
   function add(event: FormEvent<HTMLFormElement>) {
@@ -40,6 +46,11 @@ export function ChangelogPage({ store = defaultStore, now = Date.now }: { store?
     store.update((current) => removeItem(current, item.id));
     setNotice(`Removed “${item.title}”.`);
   }
+  // The "Clear search" button disappears with the empty state, so hand focus back to the search field.
+  function clearSearch() {
+    setQuery("");
+    toolbarRef.current?.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+  }
   function restoreSamples() {
     store.update(() => SEED);
     setNotice("Restored the two sample lines.");
@@ -53,7 +64,7 @@ export function ChangelogPage({ store = defaultStore, now = Date.now }: { store?
 
         <section aria-labelledby="list-title">
           <div className="rs-section-head"><h2 id="list-title">Releases</h2></div>
-          <div className="rs-toolbar">
+          <div className="rs-toolbar" ref={toolbarRef}>
             <SearchForm label="Search release notes" placeholder="Title, detail or state" value={query} onValueChange={setQuery} onClear={() => setQuery("")} />
             <ResultCount shown={visible.length} total={items.length} noun="release" query={query.trim() || undefined} />
           </div>
@@ -63,7 +74,7 @@ export function ChangelogPage({ store = defaultStore, now = Date.now }: { store?
                 <li key={item.id}>
                   <article className="rs-entry cl-entry">
                     <h3>{item.title}</h3>
-                    <p className="rs-entry-meta"><time dateTime={isoDay(item.createdAt)}>{formatDate(isoDay(item.createdAt))}</time></p>
+                    <p className="rs-entry-meta"><ReleaseDate createdAt={item.createdAt} /></p>
                     {item.body ? <p className="rs-entry-summary">{item.body}</p> : null}
                     <div className="cl-entry-foot">
                       <Tags tags={[item.status]} label="State" />
@@ -74,7 +85,7 @@ export function ChangelogPage({ store = defaultStore, now = Date.now }: { store?
               ))}
             </ul>
           ) : query.trim() ? (
-            <EmptyState title="Nothing matches" headingLevel={3} action={<button type="button" className="rs-plain" onClick={() => setQuery("")}>Clear search</button>}>No release mentions “{query.trim()}”.</EmptyState>
+            <EmptyState title="Nothing matches" headingLevel={3} action={<button type="button" className="rs-plain" onClick={clearSearch}>Clear search</button>}>No release mentions “{query.trim()}”.</EmptyState>
           ) : (
             <EmptyState title="No releases yet" headingLevel={3} action={<button type="button" className="rs-plain" onClick={restoreSamples}>Restore the sample lines</button>}>Add the first release below, or bring back the two sample lines.</EmptyState>
           )}

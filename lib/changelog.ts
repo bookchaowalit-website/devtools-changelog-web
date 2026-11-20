@@ -65,7 +65,12 @@ export function formatReleaseDate(createdAt: number): string {
     .toUpperCase();
 }
 
-/** "2 Oct 2026" for the reader list; the ISO day for <time dateTime>. Both in UTC. */
-export function isoDay(createdAt: number): string {
-  return new Date(createdAt).toISOString().slice(0, 10);
+/**
+ * The ISO day (UTC) for <time dateTime>, or null when the stored timestamp is outside the range Date can print.
+ * A finite but huge number from localStorage made toISOString() throw a RangeError and took the whole page down.
+ */
+export function isoDay(createdAt: number): string | null {
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString().slice(0, 10);
 }

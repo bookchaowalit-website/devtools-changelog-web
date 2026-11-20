@@ -21,6 +21,9 @@ export function createLocalStore<T>(options: {
   const storage = options.storage ?? (() => (typeof window === "undefined" ? undefined : window.localStorage));
   const listeners = new Set<() => void>();
   let cache: T | undefined;
+  // True after the browser refused a write: the cache then holds changes storage does not, so it must not be
+  // replaced by the older stored list on the next update.
+  let unsaved = false;
 
   function read(): T {
     try {
@@ -55,11 +58,14 @@ export function createLocalStore<T>(options: {
       return options.seed;
     },
     update(next) {
-      cache = next(latest(this.getSnapshot()));
+      const current = this.getSnapshot();
+      cache = next(unsaved ? current : latest(current));
       try {
         storage()?.setItem(options.key, options.serialize(cache));
+        unsaved = false;
       } catch {
         // Keep the in-memory value when the browser refuses to store it.
+        unsaved = true;
       }
       for (const listener of listeners) listener();
     },

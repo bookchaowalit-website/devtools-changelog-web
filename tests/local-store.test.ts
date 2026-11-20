@@ -47,6 +47,20 @@ describe("createLocalStore", () => {
     expect(mem.data.k).toBe('["other tab"]');
   });
 
+  it("keeps unsaved in-memory changes when a write is refused but reads still work", () => {
+    const mem = memory({ k: '["old"]' });
+    let full = true;
+    const storage = { getItem: mem.getItem, setItem: (k: string, v: string) => { if (full) throw new Error("QuotaExceededError"); mem.setItem(k, v); } };
+    const store = createLocalStore({ key: "k", seed: [], parse, serialize: JSON.stringify, storage: () => storage });
+    store.update((cur) => [...cur, "new"]);
+    expect(store.getSnapshot()).toEqual(["old", "new"]);
+    store.update((cur) => cur.filter((v) => v !== "old"));
+    expect(store.getSnapshot()).toEqual(["new"]);
+    full = false;
+    store.update((cur) => [...cur, "after"]);
+    expect(mem.data.k).toBe('["new","after"]');
+  });
+
   it("falls back to the seed and memory when storage throws", () => {
     const broken = { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("quota"); } };
     const store = createLocalStore({ key: "k", seed: ["seed"], parse, serialize: JSON.stringify, storage: () => broken });

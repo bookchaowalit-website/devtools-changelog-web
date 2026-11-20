@@ -29,6 +29,14 @@ A portfolio visitor (or the owner) who wants a quick scratch list of release lin
   2026-10-23.
 - No account, sync, export or sharing; clearing site data loses the lines.
 
+## Known limits
+
+- Two tabs writing at the same moment can still race: if one tab presses "Restore the sample lines" while another
+  adds a release, and both read the empty list before either writes, the later write wins and the other is lost.
+  Each update re-reads the stored list first, but writes across tabs are not serialised (no lock). (Codex 2026-11-20)
+- If a search is active when the last release is removed, the page shows "Nothing matches" and hides "Restore the
+  sample lines" until the search is cleared. (Codex 2026-11-20)
+
 ## Live URL and deploy state
 
 - Live: https://changelog.bookchaowalit.com (HTTP 200 on 2026-10-23).

@@ -2,7 +2,6 @@
 @import "./reader-shell.css";
 
 html, body { margin: 0; background: var(--rs-bg); }
-html { scroll-padding-top: 64px; }
 
 /* Add-a-release form and the remove action, on Reader shell tokens. */
 .cl-form { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 16px; max-width: var(--rs-measure); }
